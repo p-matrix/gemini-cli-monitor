@@ -1,0 +1,37 @@
+{
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [{ "command": "pmatrix-gemini session-start" }] }
+    ],
+    "SessionEnd": [
+      { "hooks": [{ "command": "pmatrix-gemini session-end" }] }
+    ],
+    "BeforeAgent": [
+      { "hooks": [{ "command": "pmatrix-gemini before-agent", "timeout": 5 }] }
+    ],
+    "BeforeTool": [
+      { "hooks": [{ "command": "pmatrix-gemini before-tool", "timeout": 5 }] }
+    ],
+    "AfterTool": [
+      { "hooks": [{ "command": "pmatrix-gemini after-tool" }] }
+    ],
+    "BeforeModel": [
+      { "hooks": [{ "command": "pmatrix-gemini before-model" }] }
+    ],
+    "AfterModel": [
+      { "hooks": [{ "command": "pmatrix-gemini after-model" }] }
+    ],
+    "AfterAgent": [
+      { "hooks": [{ "command": "pmatrix-gemini after-agent" }] }
+    ],
+    "BeforeToolSelection": [
+      { "hooks": [{ "command": "pmatrix-gemini before-tool-selection" }] }
+    ],
+    "PreCompress": [
+      { "hooks": [{ "command": "pmatrix-gemini pre-compress" }] }
+    ],
+    "Notification": [
+      { "hooks": [{ "command": "pmatrix-gemini notification" }] }
+    ]
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pmatrix-gemini session-start",
+            "name": "pmatrix-session-start",
+            "timeout": 10000,
+            "description": "P-MATRIX session start — state init + session_start signal"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pmatrix-gemini session-end",
+            "name": "pmatrix-session-end",
+            "timeout": 10000,
+            "description": "P-MATRIX session end — session_summary signal + state cleanup"
+          }
+        ]
+      }
+    ],
+    "BeforeAgent": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pmatrix-gemini before-agent",
+            "name": "pmatrix-before-agent",
+            "timeout": 10000,
+            "description": "P-MATRIX credential scanner — blocks sensitive data in prompts"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "name": "@pmatrix/gemini-cli-monitor",
+  "version": "0.1.0",
+  "description": "P-MATRIX runtime governance monitor for Gemini CLI — Safety Gate, Kill Switch, Live Grade",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "pmatrix-gemini": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "hooks",
+    "NOTICE",
+    "README.md",
+    "SECURITY.md",
+    "CONTRIBUTING.md",
+    "GEMINI.md",
+    "gemini-extension.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest --passWithNoTests",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.27.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.0.0",
+    "@types/node": "^22.0.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.4.0"
+  },
+  "keywords": [
+    "gemini",
+    "gemini-cli",
+    "pmatrix",
+    "safety",
+    "monitoring",
+    "governance",
+    "agent",
+    "hooks"
+  ],
+  "author": "P-MATRIX <architect@p-matrix.io>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/p-matrix/gemini-cli-monitor/issues"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "homepage": "https://github.com/p-matrix/gemini-cli-monitor#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/p-matrix/gemini-cli-monitor.git"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.test.ts"
+    ]
+  }
+}

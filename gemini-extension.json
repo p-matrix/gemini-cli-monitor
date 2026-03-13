@@ -1,0 +1,7 @@
+{
+  "name": "pmatrix-gemini-cli-monitor",
+  "version": "0.1.0",
+  "displayName": "P-MATRIX Gemini CLI Monitor",
+  "description": "Real-time trust scoring for Gemini CLI agents",
+  "hooks": "hooks/hooks.json"
+}
