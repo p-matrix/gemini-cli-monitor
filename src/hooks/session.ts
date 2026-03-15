@@ -39,6 +39,7 @@ import {
   cleanupStaleStates,
   PersistedSessionState,
 } from '../state-store';
+import { deleteFieldState } from '@pmatrix/field-node-runtime';
 
 // ─── sessionStart ─────────────────────────────────────────────────────────────
 
@@ -47,8 +48,16 @@ export async function handleSessionStart(
   config: PMatrixConfig,
   client: PMatrixHttpClient
 ): Promise<void> {
-  // session_id를 기본 키로 사용 — GeminiHookBase 공통 필드 (전 훅 통일)
-  const sessionId = event.session_id;
+  // GM-2: SDK SessionContext 방어 — session_id 계약 깨짐 방지
+  const sessionId = event.session_id ?? (event as unknown as Record<string, unknown>)['sessionId'] as string | undefined;
+  if (!sessionId || typeof sessionId !== 'string') {
+    if (config.debug) {
+      process.stderr.write(
+        `[P-MATRIX] sessionStart: session_id missing or invalid, skipping\n`
+      );
+    }
+    return;  // fail-open: 상태 생성하지 않음
+  }
   const agentId = config.agentId;
 
   // Cleanup stale sessions opportunistically (non-blocking)
@@ -124,6 +133,7 @@ export async function handleSessionEnd(
 
   // Clean up session state
   deleteState(sessionId);
+  deleteFieldState(sessionId);
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

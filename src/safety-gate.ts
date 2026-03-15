@@ -58,6 +58,8 @@ const LOW_TOOL_PREFIXES = [
   'list',
   'search',
   'show',
+  'enter_plan_mode',    // Gemini CLI v0.29.0+ Plan Mode (읽기전용)
+  'exit_plan_mode',     // Plan Mode 종료도 동일
 ];
 
 /**

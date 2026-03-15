@@ -4,6 +4,21 @@ All notable changes to `@pmatrix/gemini-cli-monitor` will be documented in this 
 
 ---
 
+## [0.2.0] — 2026-03-15
+
+### Added
+
+- **4.0 Field Integration** — FieldNode + IPC poller + degraded SV (neutral 0.5 axes)
+- `pmatrix_field_status` MCP tool (connected, peerCount, myPosture, fieldId)
+- Plan Mode LOW 분류 (enter_plan_mode, exit_plan_mode)
+- SDK SessionContext 방어 (session_id fail-open)
+- SIGTERM/SIGINT graceful shutdown (FieldNode.stop)
+
+### Changed
+
+- `@pmatrix/field-node-runtime@^0.2.0` 의존성 추가
+- Policy Engine KNOWN_LIMITATION 문서화
+
 ## [0.1.0] — 2026-03-13 — Initial GA Release
 
 ### Added

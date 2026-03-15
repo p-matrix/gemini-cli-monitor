@@ -44,9 +44,8 @@ Analyzes tool calls before execution, detects credential leaks in prompts, and c
 ```bash
 npm install -g @pmatrix/gemini-cli-monitor
 
-# Get your API key at app.pmatrix.io
-export PMATRIX_API_KEY=pm_live_xxxxxxxxxxxx
-pmatrix-gemini setup --agent-id <YOUR_AGENT_ID>
+# Get your API key at app.pmatrix.io → Settings → API Keys
+pmatrix-gemini setup --api-key <YOUR_API_KEY>
 ```
 
 Follow the printed instructions to add the hooks and MCP config to `~/.gemini/settings.json`, then restart Gemini CLI.
@@ -130,12 +129,14 @@ Gemini CLI only runs hooks in **trusted folders**. Before hooks will execute, yo
 
 ---
 
-## Known Limitations (v0.1.0)
+## Known Limitations (v0.2.0)
 
 | Issue | Cause | Status |
 |-------|-------|--------|
 | `BeforeToolSelection` filtering disabled | Over-intervention risk (D-7) | Observation only in v1.0 |
 | `pmatrix_*` MCP tools are self-exempt | By design | Early allow prevents recursion |
+| Policy Engine pre-execution gap | Gemini CLI calls Policy Engine after hooks | KNOWN_LIMITATION — hooks block first, Policy Engine may override |
+| `enter_plan_mode` / `exit_plan_mode` classified LOW | Read-only plan tools (v0.29.0+) | By design |
 
 ---
 
@@ -175,6 +176,24 @@ Dashboard: `https://app.pmatrix.io`
 - **Story tab** — R(t) trajectory timeline, mode transitions, tool block events
 - **Analytics tab** — Grade history, stability trends
 - **Logs tab** — Live session events, audit trail
+
+---
+
+## 4.0 Field Integration (v0.2.0+)
+
+When connected to a P-MATRIX Field, the monitor participates in the 4.0 Protocol with IPC-based degraded SV (neutral 0.5 axes):
+
+- **State Vector Exchange** — Sends behavioral measurements to Field peers
+- **`pmatrix_field_status`** MCP tool — Query Field connection status
+
+**Activation:** Set both environment variables:
+
+| Variable | Description |
+|----------|-------------|
+| `PMATRIX_FIELD_ID` | Field identifier |
+| `PMATRIX_FIELD_NODE_ID` | Node identifier |
+
+When not set, the monitor runs in standalone 3.5 mode (default).
 
 ---
 

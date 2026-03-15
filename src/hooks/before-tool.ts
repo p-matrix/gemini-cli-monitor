@@ -24,6 +24,11 @@
 //  10. GeminiBeforeToolOutput 반환
 //
 // stdout JSON 이스케이핑: index.ts에서 JSON.stringify 처리
+//
+// KNOWN_LIMITATION (v0.31.0+): Gemini CLI Policy Engine이 BeforeTool 훅 전에
+// 실행될 수 있음. Policy Engine이 사전 차단한 도구는 이 훅에 도달하지 않으므로
+// Safety Gate 커버리지에 갭이 발생할 수 있음. Phase G Field Policy와의
+// 이중 거버넌스 정합성은 후속 Phase에서 설계. (2026-03-15)
 // =============================================================================
 
 import { PMatrixConfig, SignalPayload } from '../types';
@@ -42,13 +47,30 @@ import {
   isHaltActive,
   PersistedSessionState,
 } from '../state-store';
+import { isField4Enabled, writeFieldState } from '@pmatrix/field-node-runtime';
+
+/** Write field state partial for MCP IPC poller (fail-open, no-op if 4.0 not enabled) */
+function syncFieldState(sessionId: string, state: PersistedSessionState): void {
+  if (!isField4Enabled()) return;
+  writeFieldState(sessionId, {
+    currentRt: state.currentRt,
+    currentMode: state.currentMode,
+    totalTurns: state.totalTurns,
+  });
+}
 
 export async function handleBeforeTool(
   event: GeminiBeforeToolInput,
   config: PMatrixConfig,
   client: PMatrixHttpClient
 ): Promise<GeminiBeforeToolOutput> {
-  const { session_id, tool_name, tool_input } = event;
+  const { tool_name, tool_input } = event;
+
+  // GM-2: SDK SessionContext 방어 — session_id 없으면 fail-open allow
+  const session_id = event.session_id ?? (event as unknown as Record<string, unknown>)['sessionId'] as string | undefined;
+  if (!session_id) {
+    return buildAllowOutput();
+  }
   const agentId = config.agentId;
 
   // ① HALT file check — global Kill Switch, session state I/O 없이 즉시 차단
@@ -142,6 +164,7 @@ export async function handleBeforeTool(
 
   // ALLOW
   saveState(state);
+  syncFieldState(session_id, state);
   return buildAllowOutput();
 }
 
