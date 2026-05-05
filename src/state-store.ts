@@ -105,7 +105,7 @@ export function createDefaultState(sessionId: string, agentId: string): Persiste
     agentId,
     startedAt: now,
     currentRt: 0,
-    currentMode: 'A+1',
+    currentMode: 'normal',
     grade: null,
     rtCacheExpiry: new Date(Date.now() - 1).toISOString(),  // expired immediately
     isHalted: false,

@@ -124,11 +124,11 @@ export async function handleStatusTool(
 
 function modeDescription(mode: string): string {
   const map: Record<string, string> = {
-    'A+1': '(Normal)',
-    'A+0': '(Caution)',
-    'A-1': '(Alert)',
-    'A-2': '(Critical)',
-    'A-0': '(Halt)',
+    'normal': '(Normal)',
+    'caution': '(Caution)',
+    'alert': '(Alert)',
+    'critical': '(Critical)',
+    'halt': '(Halt)',
   };
   return map[mode] ?? '';
 }

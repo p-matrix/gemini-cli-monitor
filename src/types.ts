@@ -9,7 +9,7 @@
 // ─── 5-Mode and Grade ─────────────────────────────────────────────────────────
 
 /** P-MATRIX 5-Mode (Server constants.py 경계값 기준) */
-export type SafetyMode = 'A+1' | 'A+0' | 'A-1' | 'A-2' | 'A-0';
+export type SafetyMode = 'normal' | 'caution' | 'alert' | 'critical' | 'halt';
 
 /** Trust Grade */
 export type TrustGrade = 'A' | 'B' | 'C' | 'D' | 'E';

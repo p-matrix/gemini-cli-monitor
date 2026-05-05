@@ -23,6 +23,16 @@ import {
   saveState,
   PersistedSessionState,
 } from '../state-store';
+import { BreachSupport } from '../breach-support';
+
+/** Lazily-initialized BreachSupport instance */
+let breachSupport: BreachSupport | null = null;
+function getBreachSupport(agentId: string): BreachSupport {
+  if (!breachSupport || (breachSupport as any).agentId !== agentId) {
+    breachSupport = new BreachSupport(agentId);
+  }
+  return breachSupport;
+}
 
 export async function handleNotification(
   event: GeminiNotificationInput,
@@ -37,6 +47,11 @@ export async function handleNotification(
   const isToolPermission = notification_type === 'ToolPermission';
   if (isToolPermission) {
     state.policyDenyCount += 1;
+
+    // Breach Taxonomy: approval_denied tracking
+    const breach = getBreachSupport(config.agentId);
+    breach.recordApprovalDenied(`notification_${Date.now()}`);
+    breach.incrementDenied();
   }
 
   // message / details 내용 미접근 — 길이(구조적 메타데이터)만 허용
@@ -53,10 +68,11 @@ export async function handleNotification(
   // norm delta +0.03 — ToolPermission = Policy DENY 간접 신호 (§8 Notification)
   const normDelta = isToolPermission ? 0.03 : 0.0;
 
+  const eventType = isToolPermission ? 'approval_denied' : 'notification';
   const signal = buildSignal(
     state, session_id,
     notification_type, messageLength, detailsKeyCount,
-    config.frameworkTag ?? 'stable', normDelta
+    config.frameworkTag ?? 'stable', normDelta, eventType
   );
   client.sendSignal(signal).catch(() => {});
 
@@ -76,6 +92,7 @@ function buildSignal(
   detailsKeyCount: number,
   frameworkTag: 'beta' | 'stable',
   normDelta: number,
+  eventType: string = 'notification',
 ): SignalPayload {
   return {
     agent_id: state.agentId,
@@ -89,7 +106,7 @@ function buildSignal(
     framework_tag: frameworkTag,
     schema_version: '0.3',
     metadata: {
-      event_type: 'notification',
+      event_type: eventType,
       session_id: sessionId,
       notification_type: notificationType,
       // message 원문 미포함 — 길이만 (Content-Agnostic)

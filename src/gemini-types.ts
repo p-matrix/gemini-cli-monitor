@@ -90,8 +90,13 @@ export interface GeminiAfterAgentInput extends GeminiHookBase {
   prompt: string;
   /** 에이전트 응답 (Content-Agnostic) */
   prompt_response: string;
-  /** 재시도 시퀀스 여부 */
-  stop_hook_active: boolean;
+  /**
+   * 재시도 시퀀스 여부 — 이전 훅이 에이전트를 중단했을 때 true.
+   * optional: Gemini CLI v0.34.0 이전 버전에서는 AfterAgent retry path에서
+   * 미전파될 수 있었음 (fix: propagate stopHookActive in AfterAgent retry path).
+   * 핸들러는 `?? false` 폴백으로 방어적으로 처리.
+   */
+  stop_hook_active?: boolean;
 }
 
 export interface GeminiAfterAgentOutput extends GeminiHookOutput {

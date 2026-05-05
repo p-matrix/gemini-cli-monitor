@@ -129,7 +129,7 @@ Gemini CLI only runs hooks in **trusted folders**. Before hooks will execute, yo
 
 ---
 
-## Known Limitations (v0.2.0)
+## Known Limitations (v0.2.1)
 
 | Issue | Cause | Status |
 |-------|-------|--------|

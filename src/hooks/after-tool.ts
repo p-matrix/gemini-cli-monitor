@@ -42,6 +42,12 @@ export async function handleAfterTool(
       ? Object.keys(tool_response).length
       : 0;
 
+  // Breach Taxonomy: explicit success field for Pattern Matcher tool_repeat_fail detection
+  const hasError =
+    tool_response && typeof tool_response === 'object' &&
+    ('error' in tool_response || 'errorMessage' in tool_response);
+  const success = !hasError;
+
   const isMcp = mcp_context != null;
 
   if (config.debug) {
@@ -51,7 +57,7 @@ export async function handleAfterTool(
   }
 
   // 신호 전송 (fire-and-forget)
-  const signal = buildSignal(state, session_id, tool_name, responseKeyCount, isMcp, config.frameworkTag ?? 'stable');
+  const signal = buildSignal(state, session_id, tool_name, responseKeyCount, isMcp, success, config.frameworkTag ?? 'stable');
   client.sendSignal(signal).catch(() => {});
 
   saveState(state);
@@ -66,6 +72,7 @@ function buildSignal(
   toolName: string,
   responseKeyCount: number,
   isMcp: boolean,
+  success: boolean,
   frameworkTag: 'beta' | 'stable',
 ): SignalPayload {
   return {
@@ -86,6 +93,8 @@ function buildSignal(
       tool_name: toolName,
       response_key_count: responseKeyCount,
       is_mcp: isMcp,
+      // Breach Taxonomy: explicit success for Pattern Matcher tool_repeat_fail detection
+      success,
       priority: 'normal',
     },
     state_vector: null,

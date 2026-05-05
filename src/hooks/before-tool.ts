@@ -48,6 +48,16 @@ import {
   PersistedSessionState,
 } from '../state-store';
 import { isField4Enabled, writeFieldState } from '@pmatrix/field-node-runtime';
+import { BreachSupport } from '../breach-support';
+
+/** Lazily-initialized BreachSupport instance (one per process, keyed by agentId) */
+let breachSupport: BreachSupport | null = null;
+function getBreachSupport(agentId: string): BreachSupport {
+  if (!breachSupport || (breachSupport as any).agentId !== agentId) {
+    breachSupport = new BreachSupport(agentId);
+  }
+  return breachSupport;
+}
 
 /** Write field state partial for MCP IPC poller (fail-open, no-op if 4.0 not enabled) */
 function syncFieldState(sessionId: string, state: PersistedSessionState): void {
@@ -104,6 +114,34 @@ export async function handleBeforeTool(
     return buildAllowOutput();
   }
 
+  // Breach Taxonomy: scope tagging + file_write tracking
+  const breach = getBreachSupport(agentId);
+  breach.incrementToolCalls();
+
+  // Determine action primitive for scope check
+  const isFileWrite = tool_name === 'write_file' || tool_name === 'create_file' || tool_name === 'edit_file';
+  const isShellExec = tool_name === 'run_shell_command';
+  const actionPrimitive = isFileWrite ? 'AP-2' : isShellExec ? 'AP-1' : 'AP-1';
+
+  // Extract file path from tool_input for file write tools
+  const filePath = isFileWrite
+    ? ((tool_input?.['path'] as string | undefined) ?? (tool_input?.['file_path'] as string | undefined))
+    : undefined;
+
+  const inScope = breach.isInScope(actionPrimitive, filePath ?? undefined);
+
+  // AP-2 file_write observation for write_file/create_file/edit_file tools
+  if (isFileWrite && config.dataSharing) {
+    const fileWriteSignal = buildSignal(state, session_id, tool_name, {
+      event_type: 'file_write',
+      priority: 'normal',
+      file_path: filePath,
+      in_scope: inScope,
+    }, config.frameworkTag ?? 'stable');
+    client.sendCritical(fileWriteSignal).catch(() => {});
+    breach.incrementFileModifications();
+  }
+
   // ⑥ Meta-Control 5규칙 — run_shell_command 원문 분석
   //    tool_name이 run_shell_command이면 tool_input.command를 command 원문으로 사용
   //    그 외 도구: tool_name 자체 전달 (패턴 미매칭 → null)
@@ -118,8 +156,12 @@ export async function handleBeforeTool(
       event_type: 'meta_control_block',
       priority: 'critical',
       meta_control_delta: mcBlock.metaControlDelta,
+      in_scope: inScope,
     }, config.frameworkTag ?? 'stable', 0.05);
     client.sendCritical(criticalSignal).catch(() => {});
+
+    breach.recordBlockedAction(tool_name, mcBlock.reason);
+    breach.incrementDenied();
 
     state.dangerEvents += 1;
     state.safetyGateBlocks += 1;
@@ -146,8 +188,12 @@ export async function handleBeforeTool(
     const blockSignal = buildSignal(state, session_id, tool_name, {
       event_type: 'safety_gate_block',
       priority: 'critical',
+      in_scope: inScope,
     }, config.frameworkTag ?? 'stable', 0.05);
     client.sendCritical(blockSignal).catch(() => {});
+
+    breach.recordBlockedAction(tool_name, gateResult.reason);
+    breach.incrementDenied();
 
     state.safetyGateBlocks += 1;
     state.toolDenyCount += 1;
@@ -181,9 +227,11 @@ async function fetchRtWithFailOpen(
     return state.currentRt;
   }
 
+  const breach = getBreachSupport(state.agentId);
   const signal = buildSignal(state, sessionId, toolName, {
     event_type: 'before_tool',
     priority: 'normal',
+    in_scope: breach.isInScope('AP-1'),
   }, config.frameworkTag ?? 'stable');
 
   try {
