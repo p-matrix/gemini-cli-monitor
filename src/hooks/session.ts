@@ -137,6 +137,7 @@ export async function handleSessionEnd(
 
   // Send session summary (dataSharing required)
   if (config.dataSharing) {
+    // R-X.3 migration: signal_source + framework flow via AdapterIdentity
     const summaryInput: SessionSummaryInput = {
       sessionId,
       agentId,
@@ -145,8 +146,6 @@ export async function handleSessionEnd(
       credentialBlocks: state.credentialBlocks,
       safetyGateBlocks: state.safetyGateBlocks,
       endReason: reason,
-      signal_source: 'gemini_cli_hook',
-      framework: 'gemini_cli',
       framework_tag: config.frameworkTag ?? 'stable',
     };
     await client.sendSessionSummary(summaryInput).catch(() => {});

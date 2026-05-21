@@ -292,7 +292,8 @@ describe('Cross-cutting A — Error correlation logging', () => {
     const c = new PMatrixHttpClient(makeConfig());
     await expect(c.sendBatch([makeSignal()])).rejects.toThrow();
 
-    expect(stderrCaptured.some((m) => m.includes('error_id=(none)'))).toBe(true);
+    // R-X.3 migration: core-sdk standardizes on '<none>' token across all 6 SDK
+    expect(stderrCaptured.some((m) => m.includes('error_id=<none>'))).toBe(true);
   });
 
   test('4xx 응답 (5xx 아님) → correlation log 없음', async () => {
@@ -355,9 +356,11 @@ describe('Cross-cutting B — X-Request-ID', () => {
     const c = new PMatrixHttpClient(makeConfig());
     await c.sendBatch([makeSignal()]);
 
-    const trace = stderrCaptured.find((m) => m.includes('X-Request-ID send='));
+    // R-X.3 migration: core-sdk standardizes on cursor's trace format
+    // ([P-MATRIX] trace: client_request_id=X server_request_id=Y status=Z)
+    const trace = stderrCaptured.find((m) => m.includes('trace:') && m.includes('server_request_id='));
     expect(trace).toBeDefined();
-    expect(trace).toContain('recv=req_echoed_value');
+    expect(trace).toContain('server_request_id=req_echoed_value');
   });
 
   test('PMATRIX_DEBUG_TRACE 미설정 → echo trace 없음', async () => {

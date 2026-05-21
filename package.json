@@ -1,6 +1,6 @@
 {
   "name": "@pmatrix/gemini-cli-monitor",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "P-MATRIX runtime governance monitor for Gemini CLI — Safety Gate, Kill Switch, Live Grade",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.27.1",
+    "@pmatrix/core-sdk": "^0.1.0",
     "@pmatrix/field-node-runtime": "^0.2.0"
   },
   "devDependencies": {
@@ -76,5 +77,14 @@
     "testMatch": [
       "**/__tests__/**/*.test.ts"
     ]
+  },
+  "signing": {
+    "method": "sigstore-cosign",
+    "version": 1,
+    "identity_pattern": "https://github.com/p-matrix/pmatrix-platform/.github/workflows/plugin-sign.yml.*",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "verify_command": "bash server/scripts/verify_plugin.sh --pkg <name> --version <semver> --tgz <pkg>.tgz --sig <pkg>.sig --crt <pkg>.crt",
+    "status": "skeleton-v0",
+    "doc": "docs/active/security/PLUGIN_SIGNING.md"
   }
 }

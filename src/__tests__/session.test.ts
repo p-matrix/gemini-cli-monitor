@@ -217,8 +217,8 @@ describe('handleSessionEnd', () => {
     expect(arg.totalTurns).toBe(5);
     expect(arg.dangerEvents).toBe(1);
     expect(arg.endReason).toBe('exit');
-    expect(arg.signal_source).toBe('gemini_cli_hook');
-    expect(arg.framework).toBe('gemini_cli');
+    // R-X.3 migration: signal_source + framework flow via AdapterIdentity
+    // at client construction. Equivalent coverage in contract.test.ts.
 
     // state 삭제됨
     expect(loadState('end-1')).toBeNull();
